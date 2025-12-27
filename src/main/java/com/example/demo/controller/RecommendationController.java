@@ -16,7 +16,7 @@ public class RecommendationController {
         this.recommendationService = recommendationService;
     }
 
-    // Generate recommendations for a student
+    // POST /api/recommendations/generate/{studentId}
     @PostMapping("/generate/{studentId}")
     public ResponseEntity<?> generate(@PathVariable Long studentId) {
         return ResponseEntity.ok(
@@ -24,7 +24,7 @@ public class RecommendationController {
         );
     }
 
-    // Fetch stored recommendations (ordered by generatedAt)
+    // GET /api/recommendations/student/{studentId}
     @GetMapping("/student/{studentId}")
     public ResponseEntity<?> getByStudent(@PathVariable Long studentId) {
         return ResponseEntity.ok(
