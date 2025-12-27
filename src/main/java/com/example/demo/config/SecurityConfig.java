@@ -4,9 +4,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 public class SecurityConfig {
+
+    private final JwtUtil jwtUtil;
+
+    public SecurityConfig(JwtUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -15,18 +22,23 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
 
-                // ✅ PUBLIC AUTH ENDPOINTS
+                // ✅ PUBLIC
                 .requestMatchers("/api/auth/**").permitAll()
 
-                // ✅ SWAGGER ENDPOINTS
+                // ✅ SWAGGER
                 .requestMatchers(
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
                         "/swagger-ui.html"
                 ).permitAll()
 
-                // 🔒 EVERYTHING ELSE NEEDS JWT
+                // 🔒 PROTECTED
                 .anyRequest().authenticated()
+            )
+            // 🔐 JWT FILTER REGISTERED HERE
+            .addFilterBefore(
+                    new JwtAuthenticationFilter(jwtUtil),
+                    UsernamePasswordAuthenticationFilter.class
             );
 
         return http.build();
