@@ -2,13 +2,12 @@ package com.example.demo.serviceimpl;
 
 import com.example.demo.entity.Skill;
 import com.example.demo.entity.SkillGapRecommendation;
-import com.example.demo.repository.AssessmentResultRepository;
-import com.example.demo.repository.SkillGapRecommendationRepository;
-import com.example.demo.repository.StudentProfileRepository;
-import com.example.demo.repository.SkillRepository;
+import com.example.demo.repository.*;
 import com.example.demo.service.RecommendationService;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -32,27 +31,28 @@ public class RecommendationServiceImpl implements RecommendationService {
     }
 
     @Override
-    public SkillGapRecommendation computeRecommendationForStudentSkill(
-            Long studentId,
-            Long skillId
-    ) {
-        // TODO: implement scoring logic
-        // Returning null temporarily to satisfy compilation
-        return null;
-    }
-
-    @Override
     public List<SkillGapRecommendation> computeRecommendationsForStudent(Long studentId) {
 
-        List<Skill> activeSkills = skillRepo.findByActiveTrue();
+        List<Skill> skills = skillRepo.findByActiveTrue();
+        List<SkillGapRecommendation> results = new ArrayList<>();
 
-        // TODO: iterate + compute + save recommendations based on gap score
+        for (Skill skill : skills) {
 
-        return recommendationRepo.findByStudentProfileIdOrderByGeneratedAtDesc(studentId);
+            SkillGapRecommendation rec = new SkillGapRecommendation();
+            rec.setStudentProfile(profileRepo.findById(studentId).orElse(null));
+            rec.setSkill(skill);
+            rec.setGapLevel("MEDIUM"); // placeholder
+            rec.setGeneratedAt(Instant.now());
+
+            results.add(recommendationRepo.save(rec));
+        }
+
+        return results;
     }
 
     @Override
     public List<SkillGapRecommendation> getRecommendationsForStudent(Long studentId) {
-        return recommendationRepo.findByStudentProfileIdOrderByGeneratedAtDesc(studentId);
+        return recommendationRepo
+                .findByStudentProfileIdOrderByGeneratedAtDesc(studentId);
     }
 }

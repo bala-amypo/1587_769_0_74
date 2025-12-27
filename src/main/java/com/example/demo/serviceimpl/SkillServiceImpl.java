@@ -18,22 +18,27 @@ public class SkillServiceImpl implements SkillService {
 
     @Override
     public Skill createSkill(Skill skill) {
+
+        // Prevent duplicate skills
+        skillRepository.findBySkillName(skill.getSkillName())
+                .ifPresent(s -> {
+                    throw new RuntimeException("Skill already exists: " + s.getSkillName());
+                });
+
         skill.setActive(true);
         return skillRepository.save(skill);
     }
-    @Override
-public List<Skill> getActiveSkills() {
-    return skillRepository.findByActiveTrue();
-}
-
 
     @Override
-    public Skill updateSkill(Long id, Skill skill) {
+    public Skill updateSkill(Long id, Skill updated) {
+
         Skill existing = skillRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Skill not found"));
-        existing.setName(skill.getName());
-        existing.setCode(skill.getCode());
-        existing.setDescription(skill.getDescription());
+
+        existing.setSkillName(updated.getSkillName());
+        existing.setDescription(updated.getDescription());
+        existing.setActive(updated.isActive());
+
         return skillRepository.save(existing);
     }
 
@@ -49,9 +54,16 @@ public List<Skill> getActiveSkills() {
     }
 
     @Override
+    public List<Skill> getActiveSkills() {
+        return skillRepository.findByActiveTrue();
+    }
+
+    @Override
     public void deactivateSkill(Long id) {
+
         Skill skill = getById(id);
         skill.setActive(false);
+
         skillRepository.save(skill);
     }
 }
