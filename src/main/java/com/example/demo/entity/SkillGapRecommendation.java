@@ -7,7 +7,7 @@ import java.time.Instant;
 @Entity
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
-public class SkillGapRecord {
+public class SkillGapRecommendation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -19,14 +19,15 @@ public class SkillGapRecord {
     private Skill skill;
 
     @Column(nullable = false)
-    private Double currentScore;
+    private String recommendedAction;
+
+    private String priority; // HIGH / MEDIUM / LOW
 
     @Column(nullable = false)
-    private Double targetScore;
+    private Double gapScore;
 
-    @Column(nullable = false)
-    private Double gapScore; // targetScore - currentScore
+    private String generatedBy;
 
     @Builder.Default
-    private Instant calculatedAt = Instant.now();
+    private Instant generatedAt = Instant.now();
 }
