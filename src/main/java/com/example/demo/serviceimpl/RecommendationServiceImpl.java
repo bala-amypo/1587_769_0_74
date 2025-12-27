@@ -13,18 +13,15 @@ import java.util.List;
 @Service
 public class RecommendationServiceImpl implements RecommendationService {
 
-    private final AssessmentResultRepository assessmentRepo;
     private final SkillGapRecommendationRepository recommendationRepo;
     private final StudentProfileRepository profileRepo;
     private final SkillRepository skillRepo;
 
     public RecommendationServiceImpl(
-            AssessmentResultRepository assessmentRepo,
             SkillGapRecommendationRepository recommendationRepo,
             StudentProfileRepository profileRepo,
             SkillRepository skillRepo
     ) {
-        this.assessmentRepo = assessmentRepo;
         this.recommendationRepo = recommendationRepo;
         this.profileRepo = profileRepo;
         this.skillRepo = skillRepo;
@@ -34,25 +31,26 @@ public class RecommendationServiceImpl implements RecommendationService {
     public List<SkillGapRecommendation> computeRecommendationsForStudent(Long studentId) {
 
         List<Skill> skills = skillRepo.findByActiveTrue();
-        List<SkillGapRecommendation> results = new ArrayList<>();
+        List<SkillGapRecommendation> list = new ArrayList<>();
 
-        for (Skill skill : skills) {
+        skills.forEach(skill -> {
 
             SkillGapRecommendation rec = new SkillGapRecommendation();
             rec.setStudentProfile(profileRepo.findById(studentId).orElse(null));
             rec.setSkill(skill);
-            rec.setGapLevel("MEDIUM"); // placeholder
-            rec.setGeneratedAt(Instant.now());
 
-            results.add(recommendationRepo.save(rec));
-        }
+            // Adjust based on your entity field names
+            rec.setGap("MEDIUM");
+            rec.setCreatedAt(Instant.now());
 
-        return results;
+            list.add(recommendationRepo.save(rec));
+        });
+
+        return list;
     }
 
     @Override
     public List<SkillGapRecommendation> getRecommendationsForStudent(Long studentId) {
-        return recommendationRepo
-                .findByStudentProfileIdOrderByGeneratedAtDesc(studentId);
+        return recommendationRepo.findByStudentProfileIdOrderByCreatedAtDesc(studentId);
     }
 }
