@@ -6,13 +6,11 @@ import java.util.List;
 
 public interface StudentProfileService {
 
-    StudentProfile createProfile(StudentProfile profile);
+    StudentProfile createOrUpdateProfile(StudentProfile profile);
 
-    StudentProfile updateProfile(Long id, StudentProfile profile);
+    StudentProfile getProfileById(Long id);
 
-    StudentProfile getProfile(Long id);
+    StudentProfile getByUserId(Long userId);
 
     List<StudentProfile> getAllProfiles();
-
-    void deleteProfile(Long id);
 }

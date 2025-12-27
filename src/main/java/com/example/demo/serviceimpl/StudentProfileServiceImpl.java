@@ -17,32 +17,24 @@ public class StudentProfileServiceImpl implements StudentProfileService {
     }
 
     @Override
-    public StudentProfile createProfile(StudentProfile profile) {
+    public StudentProfile createOrUpdateProfile(StudentProfile profile) {
         return profileRepository.save(profile);
     }
 
     @Override
-    public StudentProfile updateProfile(Long id, StudentProfile profile) {
-        StudentProfile existing = getProfile(id);
-        existing.setName(profile.getName());
-        existing.setDepartment(profile.getDepartment());
-        existing.setCohort(profile.getCohort());
-        return profileRepository.save(existing);
+    public StudentProfile getProfileById(Long id) {
+        return profileRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Profile not found"));
     }
 
     @Override
-    public StudentProfile getProfile(Long id) {
-        return profileRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Student profile not found"));
+    public StudentProfile getByUserId(Long userId) {
+        return profileRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Profile not found for user"));
     }
 
     @Override
     public List<StudentProfile> getAllProfiles() {
-            return profileRepository.findAll();
-    }
-
-    @Override
-    public void deleteProfile(Long id) {
-        profileRepository.deleteById(id);
+        return profileRepository.findAll();
     }
 }
