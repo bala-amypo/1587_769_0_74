@@ -1,0 +1,46 @@
+package com.example.demo.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    private final JwtUtil jwtUtil;
+
+    public SecurityConfig(JwtUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        // Password encoding uses BCryptPasswordEncoder [cite: 255]
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable()) // CSRF disabled 
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless sessions 
+            .authorizeHttpRequests(auth -> auth
+                // Public: /auth/**, /health, /swagger-ui/**, /v3/api-docs/** 
+                .requestMatchers("/auth/**", "/health", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                // Protected: /api/** 
+                .requestMatchers("/api/**").authenticated()
+                .anyRequest().authenticated()
+            )
+            // Configures JWT filter 
+            .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+}
