@@ -6,24 +6,27 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/gaps")
-@Tag(name = "Gaps")
+@RequestMapping("/api/skill-gaps")
+@Tag(name = "Skill Gaps")
 public class SkillGapController {
+
     private final SkillGapService skillGapService;
 
     public SkillGapController(SkillGapService skillGapService) {
         this.skillGapService = skillGapService;
     }
 
-    @PostMapping("/compute/{studentId}")
-    public ResponseEntity<?> computeGaps(@PathVariable Long studentId) {
-        [cite_start]// Compute and persist skill gaps for student [cite: 114]
-        return ResponseEntity.ok(skillGapService.computeGaps(studentId));
+    @PostMapping("/analyze/{studentId}")
+    public ResponseEntity<?> analyze(@PathVariable Long studentId) {
+        return ResponseEntity.ok(
+                skillGapService.analyzeSkillGaps(studentId)
+        );
     }
 
     @GetMapping("/student/{studentId}")
-    public ResponseEntity<?> getGapsByStudent(@PathVariable Long studentId) {
-        [cite_start]// Get stored gap records for student [cite: 115]
-        return ResponseEntity.ok(skillGapService.getGapsByStudent(studentId));
+    public ResponseEntity<?> getSkillGaps(@PathVariable Long studentId) {
+        return ResponseEntity.ok(
+                skillGapService.getSkillGapsForStudent(studentId)
+        );
     }
 }

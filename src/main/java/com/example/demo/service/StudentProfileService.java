@@ -1,29 +1,18 @@
-package com.example.demo.controller;
+package com.example.demo.service;
 
-import com.example.demo.service.RecommendationService;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import com.example.demo.entity.StudentProfile;
 
-@RestController
-@RequestMapping("/api/recommendations")
-@Tag(name = "Recommendations")
-public class RecommendationController {
-    private final RecommendationService recommendationService;
+import java.util.List;
 
-    public RecommendationController(RecommendationService recommendationService) {
-        this.recommendationService = recommendationService;
-    }
+public interface StudentProfileService {
 
-    @PostMapping("/generate/{studentId}")
-    public ResponseEntity<?> generate(@PathVariable Long studentId) {
-        [cite_start]// Generate recommendations for student [cite: 117]
-        return ResponseEntity.ok(recommendationService.computeRecommendationsForStudent(studentId));
-    }
+    StudentProfile createProfile(StudentProfile profile);
 
-    @GetMapping("/student/{studentId}")
-    public ResponseEntity<?> getByStudent(@PathVariable Long studentId) {
-        [cite_start]// Get stored recommendations ordered by generatedAt [cite: 118]
-        return ResponseEntity.ok(recommendationService.getRecommendationsForStudent(studentId));
-    }
+    StudentProfile updateProfile(Long id, StudentProfile profile);
+
+    StudentProfile getProfile(Long id);
+
+    List<StudentProfile> getAllProfiles();
+
+    void deleteProfile(Long id);
 }
