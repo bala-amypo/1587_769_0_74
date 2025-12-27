@@ -1,9 +1,13 @@
 package com.example.demo.dto;
 
 import com.example.demo.entity.Role;
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class UserDTO {
 
     private Long id;

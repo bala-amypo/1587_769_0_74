@@ -16,10 +16,10 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false , unique = true)
     private String username;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false , unique = true)
     private String email;
 
     @Column(nullable = false)
@@ -29,5 +29,6 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
+    @Builder.Default
     private boolean active = true;
 }

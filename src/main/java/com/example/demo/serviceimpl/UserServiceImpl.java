@@ -16,10 +16,10 @@ public class UserServiceImpl implements UserService {
         this.userRepository = userRepository;
     }
 
+    // Register new user
     @Override
-    public User createUser(User user) {
+    public User register(User user) {
 
-        // ensure unique email & username
         userRepository.findByUsername(user.getUsername())
                 .ifPresent(u -> { throw new RuntimeException("Username already exists"); });
 
@@ -30,37 +30,37 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
+    // Login user
     @Override
-    public User updateUser(Long id, User updated) {
+    public User login(String username, String password) {
 
-        User existing = getUser(id);
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Invalid username"));
 
-        existing.setUsername(updated.getUsername());
-        existing.setEmail(updated.getEmail());
-        existing.setRole(updated.getRole());
-
-        // password change is optional
-        if (updated.getPassword() != null && !updated.getPassword().isBlank()) {
-            existing.setPassword(updated.getPassword());
+        if (!user.getPassword().equals(password)) {
+            throw new RuntimeException("Invalid password");
         }
 
-        return userRepository.save(existing);
+        return user;
     }
 
+    // Get user by id
     @Override
-    public User getUser(Long id) {
+    public User getById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
+    // Get all users
     @Override
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
+    // Soft delete / deactivate
     @Override
     public void deactivateUser(Long id) {
-        User user = getUser(id);
+        User user = getById(id);
         user.setActive(false);
         userRepository.save(user);
     }
