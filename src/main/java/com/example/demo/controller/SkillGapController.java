@@ -13,7 +13,7 @@ public class SkillGapController {
     private final SkillGapService skillGapService;
 
     public SkillGapController(SkillGapService skillGapService) {
-        ths.skillGapService = skillGapService;
+        this.skillGapService = skillGapService;
     }
 
     @PostMapping("/analyze/{studentId}")
