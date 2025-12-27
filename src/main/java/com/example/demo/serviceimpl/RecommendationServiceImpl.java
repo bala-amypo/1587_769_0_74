@@ -2,11 +2,12 @@ package com.example.demo.serviceimpl;
 
 import com.example.demo.entity.Skill;
 import com.example.demo.entity.SkillGapRecommendation;
-import com.example.demo.repository.*;
+import com.example.demo.repository.SkillGapRecommendationRepository;
+import com.example.demo.repository.SkillRepository;
+import com.example.demo.repository.StudentProfileRepository;
 import com.example.demo.service.RecommendationService;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,27 +31,31 @@ public class RecommendationServiceImpl implements RecommendationService {
     @Override
     public List<SkillGapRecommendation> computeRecommendationsForStudent(Long studentId) {
 
+        var profile = profileRepo.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student profile not found"));
+
         List<Skill> skills = skillRepo.findByActiveTrue();
-        List<SkillGapRecommendation> list = new ArrayList<>();
 
-        skills.forEach(skill -> {
+        List<SkillGapRecommendation> recList = new ArrayList<>();
 
-            SkillGapRecommendation rec = new SkillGapRecommendation();
-            rec.setStudentProfile(profileRepo.findById(studentId).orElse(null));
-            rec.setSkill(skill);
+        for (Skill skill : skills) {
 
-            // Adjust based on your entity field names
-            rec.setGap("MEDIUM");
-            rec.setCreatedAt(Instant.now());
+            SkillGapRecommendation rec = SkillGapRecommendation.builder()
+                    .studentProfile(profile)
+                    .skill(skill)
+                    .recommendationText(
+                            "Improve competency in skill: " + skill.getCode()
+                    )
+                    .build();
 
-            list.add(recommendationRepo.save(rec));
-        });
+            recList.add(recommendationRepo.save(rec));
+        }
 
-        return list;
+        return recList;
     }
 
     @Override
     public List<SkillGapRecommendation> getRecommendationsForStudent(Long studentId) {
-        return recommendationRepo.findByStudentProfileIdOrderByCreatedAtDesc(studentId);
+        return recommendationRepo.findByStudentProfileId(studentId);
     }
 }
