@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface StudentProfileRepository extends JpaRepository<StudentProfile, Long> {
-    Optional<StudentProfile> findByEnrollmentId(String enrollmentId); [cite: 48]
-    Optional<StudentProfile> findByUserId(Long userId); [cite: 49]
-    boolean existsByEnrollmentId(String enrollmentId); [cite: 49]
+    Optional<StudentProfile> findByEnrollmentId(String enrollmentId);
+    Optional<StudentProfile> findByUserId(Long userId);
+    boolean existsByEnrollmentId(String enrollmentId);
 }

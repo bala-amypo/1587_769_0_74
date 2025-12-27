@@ -2,41 +2,36 @@ package com.example.demo.controller;
 
 import com.example.demo.entity.StudentProfile;
 import com.example.demo.service.StudentProfileService;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/students")
-@Tag(name = "Students")
 public class StudentProfileController {
-    private final StudentProfileService profileService;
+    private final StudentProfileService studentProfileService;
 
-    public StudentProfileController(StudentProfileService profileService) {
-        this.profileService = profileService;
+    public StudentProfileController(StudentProfileService studentProfileService) {
+        this.studentProfileService = studentProfileService;
     }
 
     @PostMapping("/")
-    public ResponseEntity<?> createProfile(@RequestBody StudentProfile profile) {
-        [cite_start]// Creates student profile [cite: 99]
-        return ResponseEntity.ok(profileService.createOrUpdateProfile(profile));
+    public ResponseEntity<StudentProfile> create(@RequestBody StudentProfile profile) {
+        return ResponseEntity.ok(studentProfileService.createOrUpdateProfile(profile));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getById(@PathVariable Long id) {
-        [cite_start]// Get profile by id [cite: 100]
-        return ResponseEntity.ok(profileService.getProfileById(id));
+    public ResponseEntity<StudentProfile> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(studentProfileService.getProfileById(id));
     }
 
-    @GetMapping("/enrollment/{enrollmentId}")
-    public ResponseEntity<?> getByEnrollmentId(@PathVariable String enrollmentId) {
-        [cite_start]// Get profile by enrollment ID [cite: 101]
-        return ResponseEntity.ok(profileService.getProfileByEnrollmentId(enrollmentId));
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<StudentProfile> getByUserId(@PathVariable Long userId) {
+        return ResponseEntity.ok(studentProfileService.getByUserId(userId));
     }
 
     @GetMapping("/")
-    public ResponseEntity<?> listAll() {
-        [cite_start]// List all profiles [cite: 102]
-        return ResponseEntity.ok(profileService.getAllProfiles());
+    public ResponseEntity<List<StudentProfile>> getAll() {
+        return ResponseEntity.ok(studentProfileService.getAllProfiles());
     }
 }
