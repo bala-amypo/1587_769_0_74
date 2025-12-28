@@ -3,11 +3,9 @@ package com.example.demo.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-@EnableWebSecurity
 public class SecurityConfig {
 
     @Bean
@@ -17,16 +15,26 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
 
-                    // Public Auth APIs (no lock)
-                    .requestMatchers(
-                            "/api/auth/login",
-                            "/api/auth/register",
-                            "/api/auth/users",
-                            "/api/auth/user/**"
-                    ).permitAll()
+                // ✅ Allow Swagger UI
+                .requestMatchers(
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/v3/api-docs/**",
+                        "/v3/api-docs.yaml",
+                        "/swagger-resources/**",
+                        "/webjars/**"
+                ).permitAll()
 
-                    // Everything else requires authentication
-                    .anyRequest().authenticated()
+                // ✅ Allow Public Auth APIs
+                .requestMatchers(
+                        "/api/auth/login",
+                        "/api/auth/register",
+                        "/api/auth/users",
+                        "/api/auth/user/**"
+                ).permitAll()
+
+                // 🔐 Everything else is secured
+                .anyRequest().authenticated()
             );
 
         return http.build();
