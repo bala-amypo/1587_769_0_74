@@ -1,63 +1,73 @@
-package com.example.demo.security;
+package com.example.demo.config;
 
-import com.example.demo.service.AuthService;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
 
 @Component
-@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final AuthService authService;
+
+    public JwtAuthenticationFilter(JwtUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
+    }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
-            throws ServletException, IOException {
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain
+    ) throws ServletException, IOException {
 
         String header = request.getHeader("Authorization");
 
-        // 🔹 Skip if no Bearer token → prevents Base64 error
-        if (header == null || !header.startsWith("Bearer ")) {
+        // Don't process login/register
+        if (request.getRequestURI().contains("/api/auth/login")
+                || request.getRequestURI().contains("/api/auth/register")) {
+
             filterChain.doFilter(request, response);
             return;
         }
 
-        String token = header.substring(7);
+        if (header != null && header.startsWith("Bearer ")) {
 
-        String username = jwtUtil.extractUsername(token);
+            try {
+                String token = header.substring(7);
 
-        if (username != null &&
-                SecurityContextHolder.getContext().getAuthentication() == null) {
+                Claims claims = Jwts.parserBuilder()
+                        .setSigningKey(jwtUtil.getKey())
+                        .build()
+                        .parseClaimsJws(token)
+                        .getBody();
 
-            UserDetails userDetails = authService.loadUserByUsername(username);
+                String username = claims.getSubject();
+                String role = claims.get("role", String.class);
 
-            if (jwtUtil.validateToken(token, userDetails)) {
-
-                UsernamePasswordAuthenticationToken authToken =
+                UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(
-                                userDetails,
+                                username,
                                 null,
-                                userDetails.getAuthorities()
+                                Collections.singletonList(
+                                        new SimpleGrantedAuthority("ROLE_" + role)
+                                )
                         );
 
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(auth);
 
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+            } catch (Exception ignored) {
+                SecurityContextHolder.clearContext();
             }
         }
 
