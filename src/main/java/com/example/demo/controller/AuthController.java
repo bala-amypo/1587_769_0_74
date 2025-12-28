@@ -3,8 +3,10 @@ package com.example.demo.controller;
 import com.example.demo.dto.UserDTO;
 import com.example.demo.entity.User;
 import com.example.demo.service.UserService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,52 +22,59 @@ public class AuthController {
     }
 
     // =========================
-    // Register (PUBLIC)
+    // Register  (PUBLIC)
     // =========================
     @PostMapping("/register")
-    @Operation(summary = "Register new user",
-               security = @SecurityRequirement(name = ""))   // <-- removes lock
+    @Operation(summary = "Register new user")
     public UserDTO register(@RequestBody User user) {
         return toDTO(userService.register(user));
     }
 
     // =========================
-    // Login (PUBLIC)
+    // Login  (PUBLIC)
     // =========================
     @PostMapping("/login")
-    @Operation(summary = "User login",
-               security = @SecurityRequirement(name = ""))   // <-- removes lock
-    public UserDTO login(@RequestParam String username,
-                         @RequestParam String password) {
+    @Operation(summary = "User login")
+    public UserDTO login(
+            @RequestParam String username,
+            @RequestParam String password
+    ) {
         return toDTO(userService.login(username, password));
     }
 
     // =========================
-    // Get User by ID (PUBLIC)
+    // Get User by ID  (PUBLIC)
     // =========================
     @GetMapping("/user/{id}")
-    @Operation(security = @SecurityRequirement(name = ""))
+    @Operation(summary = "Get user by ID")
     public UserDTO getUser(@PathVariable Long id) {
         return toDTO(userService.getById(id));
     }
 
     // =========================
-    // List All Users (PUBLIC)
+    // List All Users  (PUBLIC)
     // =========================
     @GetMapping("/users")
-    @Operation(security = @SecurityRequirement(name = ""))
+    @Operation(summary = "Get all users")
     public List<User> listUsers() {
         return userService.getAllUsers();
     }
 
     // =========================
-    // Deactivate (SECURED)
+    // Deactivate User (SECURED)
     // =========================
     @PutMapping("/deactivate/{id}")
+    @Operation(
+            summary = "Deactivate user (Requires JWT)",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     public void deactivate(@PathVariable Long id) {
         userService.deactivateUser(id);
     }
 
+    // =========================
+    // DTO MAPPER
+    // =========================
     private UserDTO toDTO(User u) {
         return UserDTO.builder()
                 .id(u.getId())
