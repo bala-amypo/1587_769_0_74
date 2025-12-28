@@ -1,12 +1,13 @@
 package com.example.demo.controller;
 
+import com.example.demo.config.JwtUtil;
+import com.example.demo.dto.LoginRequest;
+import com.example.demo.dto.LoginResponse;
 import com.example.demo.dto.UserDTO;
 import com.example.demo.entity.User;
 import com.example.demo.service.UserService;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,53 +17,50 @@ import java.util.List;
 public class AuthController {
 
     private final UserService userService;
+    private final JwtUtil jwtUtil;
 
-    public AuthController(UserService userService) {
+    public AuthController(UserService userService, JwtUtil jwtUtil) {
         this.userService = userService;
+        this.jwtUtil = jwtUtil;
     }
 
-    // =========================
-    // Register  (PUBLIC)
-    // =========================
+    // REGISTER (PUBLIC)
     @PostMapping("/register")
     @Operation(summary = "Register new user")
     public UserDTO register(@RequestBody User user) {
         return toDTO(userService.register(user));
     }
 
-    // =========================
-    // Login  (PUBLIC)
-    // =========================
+    // LOGIN + RETURN TOKEN (PUBLIC)
     @PostMapping("/login")
     @Operation(summary = "User login")
-    public UserDTO login(
-            @RequestParam String username,
-            @RequestParam String password
-    ) {
-        return toDTO(userService.login(username, password));
+    public LoginResponse login(@RequestBody LoginRequest request) {
+
+        User user = userService.login(request.getUsername(), request.getPassword());
+
+        String token = jwtUtil.generateToken(user);
+
+        return new LoginResponse(
+                token,
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole().name()
+        );
     }
 
-    // =========================
-    // Get User by ID  (PUBLIC)
-    // =========================
+    // PUBLIC APIs
     @GetMapping("/user/{id}")
-    @Operation(summary = "Get user by ID")
     public UserDTO getUser(@PathVariable Long id) {
         return toDTO(userService.getById(id));
     }
 
-    // =========================
-    // List All Users  (PUBLIC)
-    // =========================
     @GetMapping("/users")
-    @Operation(summary = "Get all users")
     public List<User> listUsers() {
         return userService.getAllUsers();
     }
 
-    // =========================
-    // Deactivate User (SECURED)
-    // =========================
+    // PROTECTED API
     @PutMapping("/deactivate/{id}")
     @Operation(
             summary = "Deactivate user (Requires JWT)",
@@ -72,9 +70,6 @@ public class AuthController {
         userService.deactivateUser(id);
     }
 
-    // =========================
-    // DTO MAPPER
-    // =========================
     private UserDTO toDTO(User u) {
         return UserDTO.builder()
                 .id(u.getId())
