@@ -50,15 +50,15 @@ public class AuthController {
     }
 
     // PUBLIC APIs
-    @GetMapping("/user/{id}")
-    public UserDTO getUser(@PathVariable Long id) {
-        return toDTO(userService.getById(id));
-    }
+    // @GetMapping("/user/{id}")
+    // public UserDTO getUser(@PathVariable Long id) {
+    //     return toDTO(userService.getById(id));
+    // }
 
-    @GetMapping("/users")
-    public List<User> listUsers() {
-        return userService.getAllUsers();
-    }
+    // @GetMapping("/users")
+    // public List<User> listUsers() {
+    //     return userService.getAllUsers();
+    // }
 
     // PROTECTED API
     // @PutMapping("/deactivate/{id}")
