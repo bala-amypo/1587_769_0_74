@@ -1,94 +1,57 @@
 package com.example.demo.config;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
+import java.io.IOException;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-@Configuration
-public class SecurityConfig {
+@Component
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
 
-    public SecurityConfig(JwtUtil jwtUtil) {
+    public JwtAuthenticationFilter(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
     }
 
-    // =========================
-    // Register Filter as Bean
-    // =========================
-    @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwtUtil);
-    }
+    @Override
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain
+    ) throws ServletException, IOException {
 
-    // =========================
-    // Password Encoder
-    // =========================
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+        String authHeader = request.getHeader("Authorization");
 
-    // =========================
-    // Security Rules
-    // =========================
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-        http
-                .csrf(csrf -> csrf.disable())
+        String token = authHeader.substring(7);
 
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        String username = jwtUtil.extractUsername(token);
 
-                .authorizeHttpRequests(auth -> auth
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                        // PUBLIC
-                        .requestMatchers(
-                                "/api/auth/register",
-                                "/api/auth/login",
-                                "/api/auth/user/**",
-                                "/api/auth/users"
-                        ).permitAll()
+            UsernamePasswordAuthenticationToken auth =
+                    new UsernamePasswordAuthenticationToken(username, null, null);
 
-                        // SWAGGER PUBLIC
-                        .requestMatchers(
-                                "/v3/api-docs/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html"
-                        ).permitAll()
+            auth.setDetails(
+                    new WebAuthenticationDetailsSource().buildDetails(request)
+            );
 
-                        // SECURED
-                        .anyRequest().authenticated()
-                )
+            SecurityContextHolder.getContext().setAuthentication(auth);
+        }
 
-                // Attach Filter
-                .addFilterBefore(
-                        jwtAuthenticationFilter(),
-                        UsernamePasswordAuthenticationFilter.class
-                );
-
-        return http.build();
-    }
-
-    // =========================
-    // Auth Manager
-    // =========================
-    @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration config) throws Exception {
-
-        return config.getAuthenticationManager();
+        filterChain.doFilter(request, response);
     }
 }
