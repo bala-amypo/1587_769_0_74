@@ -61,14 +61,14 @@ public class AuthController {
     }
 
     // PROTECTED API
-    @PutMapping("/deactivate/{id}")
-    @Operation(
-            summary = "Deactivate user (Requires JWT)",
-            security = @SecurityRequirement(name = "bearerAuth")
-    )
-    public void deactivate(@PathVariable Long id) {
-        userService.deactivateUser(id);
-    }
+    // @PutMapping("/deactivate/{id}")
+    // @Operation(
+    //         summary = "Deactivate user (Requires JWT)",
+    //         security = @SecurityRequirement(name = "bearerAuth")
+    // )
+    // public void deactivate(@PathVariable Long id) {
+    //     userService.deactivateUser(id);
+    // }
 
     private UserDTO toDTO(User u) {
         return UserDTO.builder()
