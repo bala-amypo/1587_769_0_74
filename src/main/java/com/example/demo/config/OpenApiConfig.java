@@ -20,7 +20,6 @@ public class OpenApiConfig {
                 .servers(List.of(
                         new Server().url("https://9111.pro604cr.amypo.ai")
                 ))
-                // 🔒 ENABLE JWT IN SWAGGER
                 .components(new Components()
                         .addSecuritySchemes("bearerAuth",
                                 new SecurityScheme()
