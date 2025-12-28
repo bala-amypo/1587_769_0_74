@@ -18,7 +18,11 @@ import java.util.Collections;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private static final String SECRET = "CHANGE_THIS_SECRET_KEY_32_CHARS";
+    private final JwtUtil jwtUtil;
+
+    public JwtAuthenticationFilter(JwtUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
+    }
 
     @Override
     protected void doFilterInternal(
@@ -29,13 +33,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String header = request.getHeader("Authorization");
 
+        // Don't process login/register
+        if (request.getRequestURI().contains("/api/auth/login")
+                || request.getRequestURI().contains("/api/auth/register")) {
+
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         if (header != null && header.startsWith("Bearer ")) {
 
             try {
                 String token = header.substring(7);
 
-                Claims claims = Jwts.parser()
-                        .setSigningKey(SECRET)
+                Claims claims = Jwts.parserBuilder()
+                        .setSigningKey(jwtUtil.getKey())
+                        .build()
                         .parseClaimsJws(token)
                         .getBody();
 
@@ -53,7 +66,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 SecurityContextHolder.getContext().setAuthentication(auth);
 
-            } catch (Exception ex) {
+            } catch (Exception ignored) {
                 SecurityContextHolder.clearContext();
             }
         }
